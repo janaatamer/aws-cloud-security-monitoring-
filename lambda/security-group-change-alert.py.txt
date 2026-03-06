@@ -1,0 +1,46 @@
+import boto3
+from datetime import datetime
+
+sns_client = boto3.client("sns")
+SNS_TOPIC_ARN = "arn:aws:sns:eu-north-1:369012867517:security-alerts"
+
+def lambda_handler(event, context):
+
+    detail = event.get("detail", {})
+
+    user = detail.get("userIdentity", {}).get("userName", "Unknown")
+    sg_id = detail.get("requestParameters", {}).get("groupId", "Unknown")
+
+    ip_permissions = detail.get("requestParameters", {}).get("ipPermissions", [{}])
+
+    port = ip_permissions[0].get("fromPort", "Unknown")
+
+    ip_ranges = ip_permissions[0].get("ipRanges", [{}])
+    cidr = ip_ranges[0].get("cidrIp", "Unknown")
+
+    region = event.get("region", "Unknown")
+    time = event.get("time", datetime.utcnow().isoformat())
+
+    message = f"""
+AWS Security Alert
+=================
+Event Type: Security Group Rule Added
+
+User: {user}
+Security Group: {sg_id}
+Port Opened: {port}
+Source CIDR: {cidr}
+Region: {region}
+Time: {time}
+
+Action Required:
+Verify this change is authorized.
+"""
+
+    sns_client.publish(
+        TopicArn=SNS_TOPIC_ARN,
+        Subject="AWS Security Alert: Security Group Modified",
+        Message=message
+    )
+
+    return {"statusCode": 200}
