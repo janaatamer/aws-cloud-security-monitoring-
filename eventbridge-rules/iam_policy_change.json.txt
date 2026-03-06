@@ -1,0 +1,12 @@
+{
+  "source": ["aws.iam"],
+  "detail-type": ["AWS API Call via CloudTrail"],
+  "detail": {
+    "eventName": [
+      "AttachRolePolicy",
+      "AttachUserPolicy",
+      "PutUserPolicy",
+      "PutRolePolicy"
+    ]
+  }
+}
